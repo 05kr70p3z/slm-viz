@@ -24,9 +24,9 @@ jobs:
           toolchain: stable
           target: wasm32-unknown-unknown
 
-      - uses: jetli/trunk-action@v0.5
+      - uses: taiki-e/install-action@v2
         with:
-          version: latest
+          tool: trunk
 
       - run: trunk build --release
 
