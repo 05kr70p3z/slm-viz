@@ -95,7 +95,6 @@ pub struct EmbeddingResult {
     pub tokens: Vec<TokenInfo>,
     pub token_embeddings: Vec<Vec<f32>>,
     pub sentence_embedding: Vec<f32>,
-    pub attention_mask: Vec<f32>,
 }
 
 impl ModelState {
@@ -235,24 +234,12 @@ impl ModelState {
             .map(|t| self.get_embedding(&t.text))
             .collect();
 
-        let attention_mask: Vec<f32> = tokens
-            .iter()
-            .map(|t| {
-                if t.text == "[PAD]" {
-                    0.0
-                } else {
-                    1.0
-                }
-            })
-            .collect();
-
-        let sentence_embedding = mean_pooling_vec(&token_embeddings, &attention_mask);
+        let sentence_embedding = mean_pooling_vec(&token_embeddings);
 
         EmbeddingResult {
             tokens,
             token_embeddings,
             sentence_embedding,
-            attention_mask,
         }
     }
 
@@ -278,21 +265,20 @@ impl ModelState {
     }
 }
 
-fn mean_pooling_vec(embeddings: &[Vec<f32>], attention_mask: &[f32]) -> Vec<f32> {
+fn mean_pooling_vec(embeddings: &[Vec<f32>]) -> Vec<f32> {
     let dim = embeddings.first().map_or(0, |e| e.len());
+    if dim == 0 || embeddings.is_empty() {
+        return vec![0.0; dim];
+    }
     let mut pooled = vec![0.0f32; dim];
-    for (emb, &mask) in embeddings.iter().zip(attention_mask.iter()) {
-        if mask > 0.5 {
-            for (p, &v) in pooled.iter_mut().zip(emb.iter()) {
-                *p += v;
-            }
+    for emb in embeddings {
+        for (p, &v) in pooled.iter_mut().zip(emb.iter()) {
+            *p += v;
         }
     }
-    let total = attention_mask.iter().filter(|&&m| m > 0.5).count() as f32;
-    if total > 0.0 {
-        for p in &mut pooled {
-            *p /= total;
-        }
+    let n = embeddings.len() as f32;
+    for p in &mut pooled {
+        *p /= n;
     }
     pooled
 }
