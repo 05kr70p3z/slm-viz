@@ -46,5 +46,10 @@
         <div class="spinner"></div>
         <div>Loading SLM Viz...</div>
     </div>
+    <script>
+        window.addEventListener("TrunkApplicationStarted", () => {
+            document.getElementById("loading").remove();
+        });
+    </script>
 </body>
 </html>
