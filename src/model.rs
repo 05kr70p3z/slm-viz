@@ -127,7 +127,7 @@ impl ModelState {
             text: "[CLS]".to_string(),
             id: 101,
             start: 0,
-            end: 0,
+            end: 1,
         });
 
         let lower = text.to_lowercase();
@@ -175,10 +175,7 @@ impl ModelState {
                 text.len()
             };
 
-            let word: String = lower_chars[word_ci_start..ci]
-                .iter()
-                .filter(|c| !c.is_ascii_punctuation())
-                .collect();
+            let word: String = lower_chars[word_ci_start..ci].iter().collect();
 
             let entry = VOCAB
                 .iter()
@@ -220,7 +217,7 @@ impl ModelState {
         tokens.push(TokenInfo {
             text: "[SEP]".to_string(),
             id: 102,
-            start: text.len(),
+            start: text.len().saturating_sub(1),
             end: text.len(),
         });
 

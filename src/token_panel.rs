@@ -114,13 +114,15 @@ impl TokenPanel {
                             ),
                         );
 
-                        if token.start < token.end && !token.text.starts_with('[') {
+                        if token.start <= token.end && token.start < self.input_text.len() {
                             let snippet = &self.input_text[token.start..token.end.min(self.input_text.len())];
-                            ui.label(
-                                RichText::new(format!("\"{}\"", snippet))
-                                    .italics()
-                                    .weak(),
-                            );
+                            if !snippet.is_empty() {
+                                ui.label(
+                                    RichText::new(format!("\"{}\"", snippet))
+                                        .italics()
+                                        .weak(),
+                                );
+                            }
                         }
                     });
 
